@@ -2,49 +2,40 @@ import React, { useState, useEffect } from 'react';
 import "../App.css";
 import { Cargando } from '../components/cargando';
 import { MensajeError } from '../components/MensajeError';
-import data from "../data/sample.json"
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getSeries } from '../actions';
 
 function Series() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
+    const dispatch = useDispatch();
+  const { series, isLoading, hasError } = useSelector(state => state.series); // Accede al estado de las series
+  const [page, setPage] = useState(1);
 
-    useEffect(() => {
-        setIsLoading(true);
-        try {
-            // Simula la carga de datos
-            setTimeout(() => {
-                setIsLoading(false);
-                // Simula un error
-                if (data === null) {
-                    throw new Error('Error al cargar los datos');
-                }
-            }, 1000);
-        } catch (error) {
-            setIsLoading(false);
-            setHasError(true);
-        }
-    }, []);
+  useEffect(() => {
+    dispatch(getSeries()); // Despacha tu acción
+  }, [dispatch]);
 
-    if (isLoading) {
-        return <Cargando />;
-    }
+  if (isLoading) {
+    return <Cargando />;
+  }
 
-    if (hasError) {
-        return <MensajeError />;
-    }
+  if (hasError) {
+    return <MensajeError />;
+  }
 
-    const filterSeries = data.entries
-        .filter(entry => entry.releaseYear >= 2010 && entry.programType === "series")
-        .sort((a, b) => a.title.localeCompare(b.title))
-        .slice(0, 24);
+  const itemsPerPage = 8; // Elementos por pagina
+    const startIndex = (page - 1) * itemsPerPage;  // Calcula el índice de inicio para la página actual
 
+  const paginatedSeries = series
+    .sort((a, b) => a.title.localeCompare(b.title)) //filtra por orden alfabetico
+    .slice(startIndex, startIndex + itemsPerPage);  // Muestra solo los elementos para la página actual
+
+    const numItem=series.length;
+    const totalPages = Math.ceil(numItem / itemsPerPage);   //divide el total de items de series por los items a mostrar po pagina
     return (
+        <>
         <div>
-            {/* <nav className='NavGlobal'><Link to="/peliculas">Mejores Series</Link></nav> */}
-            {/* <h3>Top 20 series de la semana</h3> */}
             <div className="movies-container">
-                {filterSeries.map(series => {
+                {paginatedSeries.map(series => {
                     // Divide la descripción en palabras
                     let words = series.description.split(' ');
 
@@ -79,6 +70,12 @@ function Series() {
                 })}
             </div>
         </div>
+                    <div className='btn-content'>
+                    <button type="button" className="btn btn-primary" onClick={() => setPage(page - 1)} disabled={page === 1}>Anterior</button>
+                    <button type="button" className="btn btn-primary" onClick={() => setPage(page + 1)} disabled={page >= totalPages}>Siguiente</button>
+    
+                </div>
+        </>
     );
 }
 

@@ -2,58 +2,39 @@ import React, { useEffect, useState } from 'react';
 import "../App.css";
 import { Cargando } from '../components/cargando';
 import { MensajeError } from '../components/MensajeError';
-import data from "../data/sample.json"
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getPeliculas } from '../actions';
 
 const Peliculas = () => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [hasError, setHasError] = useState(false);
-    const [page, setPage] = useState(1); // Agrega un estado para la página actual
-
+    const dispatch = useDispatch();
+    const { peliculas, isLoading, hasError } = useSelector(state => state.peliculas);
+    const [page, setPage] = useState(1); 
+  
     useEffect(() => {
-        setIsLoading(true);
-        try {
-            // Simula la carga de datos
-            setTimeout(() => {
-                setIsLoading(false);
-                // Simula un error
-                if (data === null) {
-                    throw new Error('Error al cargar los datos');
-                }
-            }, 1000);
-        } catch (error) {
-            setIsLoading(false);
-            setHasError(true);
-        }
-    }, []);
-
+      dispatch(getPeliculas()); // Ejecuta la accion getPeliculas
+    }, [dispatch]);
+  
     if (isLoading) {
-        return <Cargando />;
+      return <Cargando />;
     }
-
+  
     if (hasError) {
-        return <MensajeError />;
+      return <MensajeError />;
     }
-
-    const itemsPerPage = 5; // Define cuántos elementos mostrar por página
+  
+    const itemsPerPage = 8; // Elementos por pagina
     const startIndex = (page - 1) * itemsPerPage; // Calcula el índice de inicio para la página actual
-
-    const filterMovies = data.entries
-        .filter(entry => entry.releaseYear >= 2010 && entry.programType === "movie")
-        .sort((a, b) => a.title.localeCompare(b.title))
-        .slice(startIndex, startIndex + itemsPerPage); // Muestra solo los elementos para la página actual
-    const NumItem=data.entries.filter(entry => entry.releaseYear >= 2010 && entry.programType === "movie")
-    const totalPages = Math.ceil(NumItem.length / itemsPerPage);
+  
+    const paginatedPeliculas = peliculas
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .slice(startIndex, startIndex + itemsPerPage); // Muestra solo los elementos para la página actual
+      const numItem=peliculas.length;
+    const totalPages = Math.ceil(numItem/ itemsPerPage);
 
     return (
         <>
-        {/* <nav className='NavGlobal'>
-            <Link to="/series">Mejores Series</Link>
-            <Link to="/">Home</Link>
-        </nav> */}
-            {/* <h3>Top 20 peliculas de la semana</h3> */}
             <div className="movies-container">
-                {filterMovies.map(movie => {
+                {paginatedPeliculas.map(movie => {
                     // Divide la descripción en palabras
                     let words = movie.description.split(' ');
 

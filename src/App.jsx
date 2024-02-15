@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Navbar from './components/navbar';
 import Footer from './components/footer';
 import { Link } from 'react-router-dom';
+import { MensajeError } from './components/MensajeError';
 const App = () => {
   return (
     <Router>
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/series" element={<Series/>} />
         <Route path="/peliculas" element={<Peliculas/>} />
         <Route path="/" element={<Inicio/>} />
+        <Route path="/*" element={<MensajeError/>} />
       </Routes>
       </div>
       <Footer/>
